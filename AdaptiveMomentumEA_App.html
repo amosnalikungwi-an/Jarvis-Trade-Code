@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="AMEA"/>
+<meta name="theme-color" content="#ffffff"/>
+<title>AMEA Companion</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px}
+  .app{max-width:430px;margin:0 auto;padding-bottom:80px;min-height:100vh}
+
+  /* NAV */
+  .nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;border-top:0.5px solid rgba(0,0,0,0.12);display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+  .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:#888;font-size:11px;padding:4px 12px;border-radius:10px}
+  .nav-btn.active{color:#1a73e8}
+  .nav-btn i{font-size:22px}
+
+  /* PAGES */
+  .page{display:none;padding:16px}
+  .page.active{display:block}
+  .page-header{padding:16px 16px 8px;font-size:20px;font-weight:600;color:#1a1a1a;position:sticky;top:0;background:#f5f5f0;z-index:10}
+
+  /* CARDS */
+  .card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .section-title{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 8px}
+
+  /* METRICS */
+  .metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .metric{background:#f5f5f0;border-radius:10px;padding:12px}
+  .metric-label{font-size:12px;color:#888;margin-bottom:4px}
+  .metric-value{font-size:22px;font-weight:600;color:#1a1a1a}
+  .metric-value.pos{color:#16a34a}
+  .metric-value.neg{color:#dc2626}
+
+  /* BADGES */
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:8px}
+  .badge-buy{background:#dcfce7;color:#15803d}
+  .badge-sell{background:#fee2e2;color:#b91c1c}
+  .badge-neutral{background:#f3f4f6;color:#6b7280}
+
+  /* TRADES */
+  .trade-row{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+  .trade-row:last-child{border-bottom:none}
+  .trade-info p{font-size:13px;color:#666;margin-top:3px}
+  .tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .tag{font-size:11px;padding:2px 7px;border-radius:6px;background:#f3f4f6;color:#555}
+
+  /* CONNECTION */
+  .conn-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+  .conn-dot.on{background:#22c55e}
+  .conn-dot.off{background:#ef4444}
+  .conn-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .input-row{display:flex;gap:8px}
+  .input-row input{flex:1}
+
+  /* FORMS */
+  .field-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+  .field-row label{font-size:13px;color:#555;font-weight:500}
+  .field-row input,.field-row select{width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,0.18);border-radius:10px;background:#fff;color:#1a1a1a;font-size:15px;-webkit-appearance:none;appearance:none}
+  .field-row input:focus,.field-row select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,0.12)}
+
+  /* RESULTS */
+  .result-box{background:#f5f5f0;border-radius:10px;padding:12px 14px;margin-top:6px}
+  .result-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.06)}
+  .result-row:last-child{border-bottom:none}
+  .result-row span:first-child{color:#666}
+  .result-row span:last-child{font-weight:600}
+
+  /* BUTTONS */
+  .btn{width:100%;padding:11px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+  .btn:active{opacity:0.85;transform:scale(0.98)}
+  .btn-ghost{background:#f3f4f6;color:#1a1a1a}
+  .btn-sm{padding:8px 14px;font-size:13px;width:auto;margin-top:0}
+
+  /* CLOCKS */
+  .clock-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);font-size:14px}
+  .clock-row:last-child{border-bottom:none}
+  .clock-row span:first-child{color:#666}
+  .clock-row span:last-child{font-weight:600;font-family:'Menlo','Courier New',monospace;font-size:13px}
+
+  /* SESSIONS */
+  .session-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .sess-card{border-radius:12px;padding:13px;border:0.5px solid rgba(0,0,0,0.1);background:#fff}
+  .sess-card.open{border-color:#22c55e;background:#f0fdf4}
+  .sess-name{font-size:13px;font-weight:600;margin-bottom:2px}
+  .sess-time{font-size:11px;color:#888}
+  .sess-status{font-size:12px;font-weight:600;margin-top:7px}
+  .open .sess-status{color:#16a34a}
+  .closed .sess-status{color:#9ca3af}
+
+  /* JOURNAL */
+  .log-entry{padding:11px 0;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+  .log-entry:last-child{border-bottom:none}
+  .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .log-entry p{font-size:13px;color:#666;margin-top:2px}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:32px 16px;color:#aaa;font-size:14px}
+  .empty i{font-size:36px;display:block;margin-bottom:8px;opacity:0.35}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .stat{background:#f5f5f0;border-radius:10px;padding:10px;text-align:center}
+  .stat-val{font-size:18px;font-weight:700}
+  .stat-lbl{font-size:11px;color:#888;margin-top:2px}
+  .stat-val.pos{color:#16a34a}
+  .stat-val.neg{color:#dc2626}
+
+  @media (prefers-color-scheme: dark){
+    html,body{background:#111;color:#f0f0f0}
+    .page-header{background:#111;color:#f0f0f0}
+    .card{background:#1c1c1e;border-color:rgba(255,255,255,0.1)}
+    .metric,.result-box,.stat,.tag{background:#2c2c2e}
+    .metric-label,.conn-row span,.clock-row span:first-child,.sess-time,.log-entry p,.result-row span:first-child,.field-row label,.trade-info p{color:#aaa}
+    .metric-value,.result-row span:last-child,.clock-row span:last-child{color:#f0f0f0}
+    .field-row input,.field-row select{background:#2c2c2e;border-color:rgba(255,255,255,0.15);color:#f0f0f0}
+    .nav{background:#1c1c1e;border-color:rgba(255,255,255,0.1)}
+    .nav-btn{color:#888}
+    .nav-btn.active{color:#4e9ef7}
+    .badge-buy{background:#14532d;color:#4ade80}
+    .badge-sell{background:#7f1d1d;color:#fca5a5}
+    .sess-card{background:#1c1c1e;border-color:rgba(255,255,255,0.1)}
+    .sess-card.open{background:#052e16;border-color:#22c55e}
+    .btn-ghost{background:#2c2c2e;color:#f0f0f0}
+    .tag{color:#aaa}
+    .section-title{color:#666}
+    body{background:#111}
+    .app{background:#111}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <button class="nav-btn active" onclick="showPage('monitor')" id="nav-monitor" aria-label="Monitor">
+      <i class="ti ti-chart-line" aria-hidden="true"></i>Monitor
+    </button>
+    <button class="nav-btn" onclick="showPage('risk')" id="nav-risk" aria-label="Risk calculator">
+      <i class="ti ti-calculator" aria-hidden="true"></i>Risk
+    </button>
+    <button class="nav-btn" onclick="showPage('session')" id="nav-session" aria-label="Sessions">
+      <i class="ti ti-clock" aria-hidden="true"></i>Sessions
+    </button>
+    <button class="nav-btn" onclick="showPage('journal')" id="nav-journal" aria-label="Trade journal">
+      <i class="ti ti-notebook" aria-hidden="true"></i>Journal
+    </button>
+  </nav>
+
+  <!-- ===== MONITOR ===== -->
+  <div class="page active" id="page-monitor">
+    <div class="page-header">Monitor</div>
+    <div style="padding:0 16px 16px">
+
+      <div class="card">
+        <div class="conn-row">
+          <span style="font-size:13px;font-weight:600">MT5 connection</span>
+          <span id="conn-label" style="font-size:13px;color:#888"><span class="conn-dot off" id="conn-dot"></span>Disconnected</span>
+        </div>
+        <div class="input-row">
+          <input type="text" id="mt5-host" placeholder="VPS IP:port e.g. 1.2.3.4:8080" style="font-size:13px"/>
+          <button class="btn btn-sm" onclick="toggleConnect()" id="conn-btn">Connect</button>
+        </div>
+        <p style="font-size:11px;color:#888;margin-top:8px">Needs MT5 REST bridge on your Windows VPS. See setup instructions below.</p>
+      </div>
+
+      <p class="section-title">Account summary</p>
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Balance</div><div class="metric-value" id="m-balance">—</div></div>
+        <div class="metric"><div class="metric-label">Equity</div><div class="metric-value" id="m-equity">—</div></div>
+        <div class="metric"><div class="metric-label">Open P&amp;L</div><div class="metric-value" id="m-pnl">—</div></div>
+        <div class="metric"><div class="metric-label">Free margin</div><div class="metric-value" id="m-margin">—</div></div>
+      </div>
+
+      <p class="section-title">Open trades</p>
+      <div class="card" id="trades-container">
+        <div class="empty"><i class="ti ti-wifi-off" aria-hidden="true"></i>Connect to MT5 to see live trades</div>
+      </div>
+
+      <p class="section-title">Demo mode</p>
+      <div class="card">
+        <p style="font-size:13px;color:#888;margin-bottom:10px">Preview the layout with sample data before your VPS is set up.</p>
+        <button class="btn btn-ghost" onclick="loadDemo()">Load demo data</button>
+      </div>
+
+      <p class="section-title">MT5 bridge setup</p>
+      <div class="card">
+        <p style="font-size:13px;color:#888;line-height:1.6">To connect this app to your live EA, you need a small REST bridge running on your Windows VPS alongside MT5. Steps:</p>
+        <ol style="font-size:13px;color:#666;margin:10px 0 0 16px;line-height:2">
+          <li>Install Python on your VPS</li>
+          <li>Run the MT5 Python bridge script (ask Claude to generate it)</li>
+          <li>Open the port in Windows Firewall</li>
+          <li>Enter your VPS IP:port above and tap Connect</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== RISK ===== -->
+  <div class="page" id="page-risk">
+    <div class="page-header">Risk calculator</div>
+    <div style="padding:0 16px 16px">
+
+      <p class="section-title">Lot size</p>
+      <div class="card">
+        <div class="field-row"><label>Account balance ($)</label><input type="number" id="r-balance" value="1000" inputmode="decimal" oninput="calcRisk()"/></div>
+        <div class="field-row"><label>Risk per trade (%)</label><input type="number" id="r-risk-pct" value="1" step="0.1" inputmode="decimal" oninput="calcRisk()"/></div>
+        <div class="field-row"><label>Stop loss distance (points)</label><input type="number" id="r-sl-pts" value="150" inputmode="decimal" oninput="calcRisk()"/></div>
+        <div class="field-row">
+          <label>Symbol</label>
+          <select id="r-symbol" onchange="calcRisk()">
+            <option value="10">XAUUSD (Gold) — $10 / point</option>
+            <option value="1">EURUSD — $1 / pip</option>
+            <option value="1">GBPUSD — $1 / pip</option>
+            <option value="0.1">USDJPY — $0.10 / pip</option>
+          </select>
+        </div>
+        <div class="result-box">
+          <div class="result-row"><span>Risk amount</span><span id="r-dollars">$10.00</span></div>
+          <div class="result-row"><span>Recommended lot size</span><span id="r-lot">0.07 lots</span></div>
+          <div class="result-row"><span>Pip value (1 lot)</span><span id="r-pv">$10.00</span></div>
+        </div>
+      </div>
+
+      <p class="section-title">R:R calculator</p>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <div class="field-row"><label>Entry price</label><input type="number" id="rr-entry" value="3300" step="0.01" inputmode="decimal" oninput="calcRR()"/></div>
+          <div class="field-row"><label>Direction</label>
+            <select id="rr-dir" onchange="calcRR()"><option>Buy</option><option>Sell</option></select>
+          </div>
+          <div class="field-row"><label>Stop loss</label><input type="number" id="rr-sl" value="3285" step="0.01" inputmode="decimal" oninput="calcRR()"/></div>
+          <div class="field-row"><label>Take profit</label><input type="number" id="rr-tp" value="3322" step="0.01" inputmode="decimal" oninput="calcRR()"/></div>
+        </div>
+        <div class="result-box">
+          <div class="result-row"><span>SL distance</span><span id="rr-sl-d">—</span></div>
+          <div class="result-row"><span>TP distance</span><span id="rr-tp-d">—</span></div>
+          <div class="result-row"><span>R:R ratio</span><span id="rr-ratio">—</span></div>
+          <div class="result-row"><span>Dollar risk (0.10 lot)</span><span id="rr-risk">—</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SESSIONS ===== -->
+  <div class="page" id="page-session">
+    <div class="page-header">Sessions</div>
+    <div style="padding:0 16px 16px">
+
+      <p class="section-title">World clocks</p>
+      <div class="card">
+        <div class="clock-row"><span>Your time (CAT / UTC+2)</span><span id="cl-cat">--:--:--</span></div>
+        <div class="clock-row"><span>UTC</span><span id="cl-utc">--:--:--</span></div>
+        <div class="clock-row"><span>London (UTC+1 BST)</span><span id="cl-lon">--:--:--</span></div>
+        <div class="clock-row"><span>New York (UTC-4 EDT)</span><span id="cl-ny">--:--:--</span></div>
+        <div class="clock-row"><span>Tokyo (UTC+9 JST)</span><span id="cl-tok">--:--:--</span></div>
+      </div>
+
+      <p class="section-title">Session status</p>
+      <div class="session-grid">
+        <div class="sess-card closed" id="sess-london"><div class="sess-name">London</div><div class="sess-time">08:00–17:00 UTC+1</div><div class="sess-status">○ Closed</div></div>
+        <div class="sess-card closed" id="sess-ny"><div class="sess-name">New York</div><div class="sess-time">09:00–17:00 UTC-4</div><div class="sess-status">○ Closed</div></div>
+        <div class="sess-card closed" id="sess-overlap"><div class="sess-name">Overlap</div><div class="sess-time">13:00–17:00 UTC</div><div class="sess-status">○ Inactive</div></div>
+        <div class="sess-card closed" id="sess-tokyo"><div class="sess-name">Tokyo</div><div class="sess-time">00:00–09:00 UTC</div><div class="sess-status">○ Closed</div></div>
+      </div>
+
+      <p class="section-title">EA windows in your time (CAT)</p>
+      <div class="card">
+        <div class="clock-row"><span>London open</span><span>10:00</span></div>
+        <div class="clock-row"><span>London close</span><span>19:00</span></div>
+        <div class="clock-row"><span>New York open</span><span>15:00</span></div>
+        <div class="clock-row"><span>New York close</span><span>00:00</span></div>
+        <div class="clock-row"><span>Overlap (best trading window)</span><span>15:00–19:00</span></div>
+        <div class="clock-row"><span>Dead hours (EA quieter)</span><span>02:00–07:00</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== JOURNAL ===== -->
+  <div class="page" id="page-journal">
+    <div class="page-header">Trade journal</div>
+    <div style="padding:0 16px 16px">
+
+      <p class="section-title">Performance summary</p>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val pos" id="st-wins">0</div><div class="stat-lbl">Wins</div></div>
+        <div class="stat"><div class="stat-val neg" id="st-losses">0</div><div class="stat-lbl">Losses</div></div>
+        <div class="stat"><div class="stat-val" id="st-pnl">$0</div><div class="stat-lbl">Net P&amp;L</div></div>
+      </div>
+
+      <p class="section-title">Log a trade</p>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <div class="field-row"><label>Direction</label><select id="j-dir"><option>Buy</option><option>Sell</option></select></div>
+          <div class="field-row"><label>Setup</label><select id="j-setup"><option>Breakout</option><option>Pullback</option><option>Continuation</option><option>Pattern</option></select></div>
+          <div class="field-row"><label>Entry price</label><input type="number" id="j-entry" placeholder="3300.00" step="0.01" inputmode="decimal"/></div>
+          <div class="field-row"><label>Lot size</label><input type="number" id="j-lots" placeholder="0.10" step="0.01" inputmode="decimal"/></div>
+          <div class="field-row"><label>Stop loss</label><input type="number" id="j-sl" placeholder="3285.00" step="0.01" inputmode="decimal"/></div>
+          <div class="field-row"><label>Take profit</label><input type="number" id="j-tp" placeholder="3322.00" step="0.01" inputmode="decimal"/></div>
+          <div class="field-row"><label>Confidence</label><input type="number" id="j-conf" placeholder="75" min="0" max="100" inputmode="numeric"/></div>
+          <div class="field-row"><label>Exec style</label><select id="j-style"><option>AggressiveInstant</option><option>StrictConfirmed</option><option>ReducedRisk</option></select></div>
+        </div>
+        <div class="field-row"><label>Notes</label><input type="text" id="j-notes" placeholder="e.g. strong London breakout, clean candle"/></div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <div class="field-row"><label>Outcome</label><select id="j-outcome"><option value="">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option></select></div>
+          <div class="field-row"><label>P&amp;L ($)</label><input type="number" id="j-pnl" placeholder="0.00" step="0.01" inputmode="decimal"/></div>
+        </div>
+        <button class="btn" onclick="addEntry()"><i class="ti ti-plus" aria-hidden="true"></i> Add trade</button>
+      </div>
+
+      <p class="section-title">Trade log</p>
+      <div class="card" id="journal-list">
+        <div class="empty"><i class="ti ti-notebook" aria-hidden="true"></i>No trades logged yet</div>
+      </div>
+      <button class="btn btn-ghost" id="clear-btn" onclick="clearJournal()" style="display:none">Clear all entries</button>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+var journal = [];
+try { journal = JSON.parse(localStorage.getItem('amea_j') || '[]'); } catch(e){}
+var connected = false;
+var pollTimer = null;
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'journal') renderJournal();
+}
+
+/* ---- CONNECTION ---- */
+function toggleConnect() {
+  var host = document.getElementById('mt5-host').value.trim();
+  if (!connected) {
+    if (!host) { alert('Enter the VPS IP:port first.'); return; }
+    connected = true;
+    document.getElementById('conn-dot').className = 'conn-dot on';
+    document.getElementById('conn-label').innerHTML = '<span class="conn-dot on"></span>Connected';
+    document.getElementById('conn-btn').textContent = 'Disconnect';
+    pollMT5();
+  } else {
+    connected = false;
+    clearTimeout(pollTimer);
+    document.getElementById('conn-dot').className = 'conn-dot off';
+    document.getElementById('conn-label').innerHTML = '<span class="conn-dot off"></span>Disconnected';
+    document.getElementById('conn-btn').textContent = 'Connect';
+    resetMetrics();
+  }
+}
+
+function pollMT5() {
+  if (!connected) return;
+  var host = document.getElementById('mt5-host').value.trim();
+  var base = 'http://' + host;
+  fetch(base + '/account', { signal: AbortSignal.timeout(4000) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      setM('m-balance', '$' + d.balance.toFixed(2));
+      setM('m-equity', '$' + d.equity.toFixed(2));
+      var p = d.profit || 0;
+      setM('m-pnl', (p >= 0 ? '+' : '') + '$' + Math.abs(p).toFixed(2), p >= 0 ? 'pos' : 'neg');
+      setM('m-margin', '$' + (d.margin_free || 0).toFixed(2));
+    }).catch(function(){});
+  fetch(base + '/positions', { signal: AbortSignal.timeout(4000) })
+    .then(function(r){ return r.json(); })
+    .then(function(trades){ renderTrades(trades); })
+    .catch(function(){});
+  pollTimer = setTimeout(pollMT5, 5000);
+}
+
+function resetMetrics() {
+  ['m-balance','m-equity','m-pnl','m-margin'].forEach(function(id){
+    var el = document.getElementById(id);
+    el.textContent = '—';
+    el.className = 'metric-value';
+  });
+  document.getElementById('trades-container').innerHTML = '<div class="empty"><i class="ti ti-wifi-off" aria-hidden="true"></i>Connect to MT5 to see live trades</div>';
+}
+
+function setM(id, val, cls) {
+  var el = document.getElementById(id);
+  el.textContent = val;
+  el.className = 'metric-value' + (cls ? ' ' + cls : '');
+}
+
+function renderTrades(trades) {
+  var c = document.getElementById('trades-container');
+  if (!trades || trades.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-check" aria-hidden="true"></i>No open positions</div>';
+    return;
+  }
+  c.innerHTML = trades.map(function(t){
+    var isBuy = t.type === 0;
+    var p = t.profit || 0;
+    return '<div class="trade-row">' +
+      '<div class="trade-info">' +
+        '<span class="badge ' + (isBuy ? 'badge-buy' : 'badge-sell') + '">' + (isBuy ? 'Buy' : 'Sell') + '</span>' +
+        '<p>' + t.volume + ' lot · Entry ' + parseFloat(t.price_open).toFixed(2) + '</p>' +
+        '<div class="tag-row"><span class="tag">SL ' + parseFloat(t.sl).toFixed(2) + '</span><span class="tag">TP ' + parseFloat(t.tp).toFixed(2) + '</span>' +
+        (t.comment ? '<span class="tag">' + t.comment + '</span>' : '') + '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<span class="metric-value ' + (p >= 0 ? 'pos' : 'neg') + '" style="font-size:17px">' + (p >= 0 ? '+' : '') + '$' + Math.abs(p).toFixed(2) + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function loadDemo() {
+  setM('m-balance', '$1,240.00');
+  setM('m-equity', '$1,263.50');
+  setM('m-pnl', '+$23.50', 'pos');
+  setM('m-margin', '$840.00');
+  renderTrades([
+    { type:0, volume:'0.10', price_open:3291.50, sl:3281.20, tp:3310.00, profit:14.30, comment:'Breakout StrictConfirmed' },
+    { type:0, volume:'0.05', price_open:3295.00, sl:3283.00, tp:3315.00, profit:9.20,  comment:'Pullback ReducedRisk' }
+  ]);
+}
+
+/* ---- RISK CALC ---- */
+function calcRisk() {
+  var bal = parseFloat(document.getElementById('r-balance').value) || 0;
+  var rp  = parseFloat(document.getElementById('r-risk-pct').value) || 1;
+  var slp = parseFloat(document.getElementById('r-sl-pts').value) || 1;
+  var pv  = parseFloat(document.getElementById('r-symbol').value) || 10;
+  var riskD = bal * rp / 100;
+  var lot   = slp > 0 ? riskD / (slp * pv) : 0;
+  document.getElementById('r-dollars').textContent = '$' + riskD.toFixed(2);
+  document.getElementById('r-lot').textContent = lot.toFixed(2) + ' lots';
+  document.getElementById('r-pv').textContent = '$' + pv.toFixed(2);
+}
+
+function calcRR() {
+  var entry = parseFloat(document.getElementById('rr-entry').value) || 0;
+  var sl    = parseFloat(document.getElementById('rr-sl').value) || 0;
+  var tp    = parseFloat(document.getElementById('rr-tp').value) || 0;
+  var pv    = parseFloat(document.getElementById('r-symbol').value) || 10;
+  if (!entry || !sl || !tp) return;
+  var slD = Math.abs(entry - sl);
+  var tpD = Math.abs(tp - entry);
+  var rr  = slD > 0 ? tpD / slD : 0;
+  var risk = slD * pv * 0.10;
+  document.getElementById('rr-sl-d').textContent = slD.toFixed(2) + ' pts';
+  document.getElementById('rr-tp-d').textContent = tpD.toFixed(2) + ' pts';
+  var rrEl = document.getElementById('rr-ratio');
+  rrEl.textContent = '1 : ' + rr.toFixed(2);
+  rrEl.style.color = rr >= 1.2 ? '#16a34a' : '#dc2626';
+  document.getElementById('rr-risk').textContent = '$' + risk.toFixed(2);
+}
+
+/* ---- CLOCKS ---- */
+function updateClocks() {
+  var now = new Date();
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  var fmt = function(ms) {
+    return new Date(ms).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  };
+  document.getElementById('cl-cat').textContent = fmt(utcMs + 2*3600000);
+  document.getElementById('cl-utc').textContent = fmt(utcMs);
+  document.getElementById('cl-lon').textContent = fmt(utcMs + 1*3600000);
+  document.getElementById('cl-ny').textContent  = fmt(utcMs - 4*3600000);
+  document.getElementById('cl-tok').textContent = fmt(utcMs + 9*3600000);
+
+  var utcH = new Date(utcMs).getHours();
+  var lonH = (utcH + 1) % 24;
+  var nyH  = (utcH - 4 + 24) % 24;
+  var lonOpen = lonH >= 8 && lonH < 17;
+  var nyOpen  = nyH >= 9 && nyH < 17;
+  var overlap = lonOpen && nyOpen;
+  var tokOpen = utcH >= 0 && utcH < 9;
+
+  setSess('sess-london', lonOpen, 'Open', 'Closed');
+  setSess('sess-ny', nyOpen, 'Open', 'Closed');
+  setSess('sess-overlap', overlap, 'Active', 'Inactive');
+  setSess('sess-tokyo', tokOpen, 'Open', 'Closed');
+}
+
+function setSess(id, active, openTxt, closedTxt) {
+  var el = document.getElementById(id);
+  var st = el.querySelector('.sess-status');
+  if (active) {
+    el.className = 'sess-card open';
+    st.textContent = '● ' + openTxt;
+  } else {
+    el.className = 'sess-card closed';
+    st.textContent = '○ ' + closedTxt;
+  }
+}
+
+/* ---- JOURNAL ---- */
+function addEntry() {
+  var entry = document.getElementById('j-entry').value;
+  if (!entry) { alert('Enter an entry price.'); return; }
+  var rec = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('en-GB'),
+    dir: document.getElementById('j-dir').value,
+    setup: document.getElementById('j-setup').value,
+    style: document.getElementById('j-style').value,
+    entry: entry,
+    lots: document.getElementById('j-lots').value,
+    sl: document.getElementById('j-sl').value,
+    tp: document.getElementById('j-tp').value,
+    conf: document.getElementById('j-conf').value,
+    notes: document.getElementById('j-notes').value,
+    outcome: document.getElementById('j-outcome').value,
+    pnl: document.getElementById('j-pnl').value
+  };
+  journal.unshift(rec);
+  saveJournal();
+  renderJournal();
+  ['j-entry','j-lots','j-sl','j-tp','j-conf','j-notes','j-pnl'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('j-outcome').value = '';
+}
+
+function saveJournal() {
+  try { localStorage.setItem('amea_j', JSON.stringify(journal)); } catch(e){}
+}
+
+function clearJournal() {
+  if (confirm('Clear all journal entries?')) {
+    journal = [];
+    saveJournal();
+    renderJournal();
+  }
+}
+
+function renderJournal() {
+  var c = document.getElementById('journal-list');
+  var wins = 0, losses = 0, netPnl = 0;
+  journal.forEach(function(e){
+    if (e.outcome === 'win') wins++;
+    if (e.outcome === 'loss') losses++;
+    if (e.pnl) netPnl += parseFloat(e.pnl) || 0;
+  });
+  document.getElementById('st-wins').textContent = wins;
+  document.getElementById('st-losses').textContent = losses;
+  var pnlEl = document.getElementById('st-pnl');
+  pnlEl.textContent = (netPnl >= 0 ? '+' : '') + '$' + netPnl.toFixed(2);
+  pnlEl.className = 'stat-val ' + (netPnl >= 0 ? 'pos' : 'neg');
+  document.getElementById('clear-btn').style.display = journal.length > 0 ? 'block' : 'none';
+
+  if (journal.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-notebook" aria-hidden="true"></i>No trades logged yet</div>';
+    return;
+  }
+
+  c.innerHTML = journal.slice(0, 30).map(function(e){
+    var oc = e.outcome === 'win' ? '#16a34a' : e.outcome === 'loss' ? '#dc2626' : '#888';
+    var pnlStr = e.pnl ? ((parseFloat(e.pnl) >= 0 ? ' +$' : ' -$') + Math.abs(parseFloat(e.pnl)).toFixed(2)) : '';
+    return '<div class="log-entry">' +
+      '<div class="log-head">' +
+        '<div style="display:flex;gap:6px;align-items:center">' +
+          '<span class="badge ' + (e.dir === 'Buy' ? 'badge-buy' : 'badge-sell') + '">' + e.dir + '</span>' +
+          '<span style="font-size:13px;font-weight:600">' + e.setup + '</span>' +
+          '<span style="font-size:11px;color:#888">' + e.style + '</span>' +
+        '</div>' +
+        '<span style="font-size:11px;color:#aaa">' + e.date + '</span>' +
+      '</div>' +
+      '<p>Entry ' + e.entry + ' · ' + (e.lots || '—') + ' lots · Conf ' + (e.conf || '—') + '</p>' +
+      (e.notes ? '<p style="font-style:italic;margin-top:2px">' + e.notes + '</p>' : '') +
+      '<div class="tag-row">' +
+        (e.sl ? '<span class="tag">SL ' + e.sl + '</span>' : '') +
+        (e.tp ? '<span class="tag">TP ' + e.tp + '</span>' : '') +
+        (e.outcome ? '<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:#f3f4f6;color:' + oc + ';font-weight:600">' +
+          e.outcome.charAt(0).toUpperCase() + e.outcome.slice(1) + pnlStr + '</span>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ---- INIT ---- */
+calcRisk();
+calcRR();
+renderJournal();
+updateClocks();
+setInterval(updateClocks, 1000);
+</script>
+</body>
+</html>
