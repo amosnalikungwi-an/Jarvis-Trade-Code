@@ -365,7 +365,7 @@ function toggleConnect() {
 function pollMT5() {
   if (!connected) return;
   var host = document.getElementById('mt5-host').value.trim();
-  var base = 'http://' + host;
+  var base = 'https://' + host;
   fetch(base + '/account', { signal: AbortSignal.timeout(4000) })
     .then(function(r){ return r.json(); })
     .then(function(d){
